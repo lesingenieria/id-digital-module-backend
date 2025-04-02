@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { userId: profile.id_uuid, role: profile.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: process.env.JWT_EXPIRATION }
     );
     
     console.log(token);
@@ -36,7 +36,7 @@ router.post('/login', async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',
-      expires: new Date(Date.now() + ms(process.env.JWT_EXPIRATION)) // 1 hora
+      expires: new Date(Date.now() + ms(process.env.JWT_EXPIRATION))
     });
     
     return res.json({ message: 'Inicio de sesión exitoso', token });

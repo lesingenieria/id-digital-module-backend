@@ -83,10 +83,15 @@ const getProfileByEmail = async (email) => {
   }
 };
 
+const updatePassword = async (userId, hashedPassword) => {
+    await pool.query("UPDATE profiles SET password = $1 WHERE id_uuid = $2", [hashedPassword, userId]);
+};
+
 module.exports = {
   createProfile,
   getProfileById,
   updateProfile,
   deleteProfile,
   getProfileByEmail,
+  updatePassword
 };

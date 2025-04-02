@@ -30,6 +30,18 @@ const adminMiddleware = (req, res, next) => {
     next();
   };
 
+  const isOwnerMiddleware = (req, res, next) => {
+    const { id } = req.params;
+  
+    if (req.user.userId !== id) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para modificar este perfil." });
+    }
+    next();
+  };
+
+  
   const checkOwnershipOrAdmin = (req, res, next) => {
     const { id } = req.params; 
   
@@ -40,4 +52,4 @@ const adminMiddleware = (req, res, next) => {
     return res.status(403).json({ message: "No tienes permisos para modificar este perfil." });
   };
 
-module.exports =  {authMiddleware, adminMiddleware, checkOwnershipOrAdmin} ;
+module.exports =  {authMiddleware, adminMiddleware, checkOwnershipOrAdmin, isOwnerMiddleware} ;

@@ -1,10 +1,12 @@
 const { v4: uuidv4 } = require("uuid");
+const { body, validationResult } = require("express-validator");
 
 const {
   createProfile,
   getProfileById,
   updateProfile,
   deleteProfile,
+  updatePassword
 } = require("../models/Profile");
 const bcrypt = require("bcryptjs");
 
@@ -14,10 +16,10 @@ const create = async (req, res) => {
     if (!profileData.password) {
       return res.status(400).json({ message: "Se requiere contraseña" });
     }
-    if(!profileData.email){
+    if (!profileData.email) {
       return res.status(400).json({ message: "Se requiere email" });
     }
-    profileData.id_uuid = uuidv4(); 
+    profileData.id_uuid = uuidv4();
 
     const hashedPassword = await bcrypt.hash(profileData.password, 10);
     profileData.password = hashedPassword;
@@ -81,9 +83,42 @@ const remove = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { currentPassword, password } = req.body;
+
+    if (!currentPassword || !password) {
+      return res.status(400).json({ message: "Faltan campos obligatorios" });
+    }
+
+    const profile = await getProfileById(userId);
+
+    if (!profile) {
+      return res.status(404).json({ message: "Perfil no encontrado" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, profile.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Contraseña actual incorrecta" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log(hashedPassword);
+    await updatePassword(userId, hashedPassword);
+
+    res.clearCookie("token");
+
+    return res.json({ message: "Contraseña actualizada con éxito" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error al actualizar la contraseña" });
+  }
+};
 module.exports = {
   create,
   getById,
   update,
   remove,
+  changePassword,
 };
